@@ -4,35 +4,54 @@
  * @version: 0.1
  * @author : Gabriel Villanova N. M.
  */
-
 module tb;
     // localparams
     localparam CLK_PERIOD = 10;
 
-    // signals
+    // clk and rst
     logic clk = 1'b0;
     logic rst_n = 1'b0;
-    logic a, b, r;
 
-	logic [31:0] addr_in;
-	logic [31:0] data_in;
-	logic [31:0] data_out;
-	logic rw; // r: 0, w: 1
-	logic [31:0] r0; 
-	logic [31:0] r1; 
-	logic [31:0] r2;
+	// amba write channel
+	logic [31:0] i_addr_wc;
+	logic [31:0] i_data_wc;
+
+	// amba read channel
+	logic [31:0] i_addr_rc;
+	logic [31:0] o_data_rc;
+
+	// amba ctrl
+	logic i_en_amba_write = 0;
+
+	// datapath
+	logic i_enable_ctrl_write = 0;
+	logic o_start;
+	logic [31:0] i_busr;
+	logic [31:0] o_r0;
+	logic [31:0] o_r1;
 
     // dut instantiation
     regfile uu_regfile(
         .ACLK(clk),
         .ARSTn(rst_n),
-        .addr_in(addr_in),
-        .data_in(data_in),
-        .rw(rw), // r: 0, w: 1
-        .data_out(data_out),
-        .r0(r0),
-        .r1(r1),
-        .r2(r2)
+        
+        // amba write channel
+        .i_addr_wc,
+        .i_data_wc,
+    
+        // amba read channel
+        .i_addr_rc,
+        .o_data_rc,
+    
+        // amba ctrl
+        .i_en_amba_write,
+    
+        // datapath
+        .i_enable_ctrl_write,
+        .o_start,
+        .i_busr,
+        .o_r0, 
+        .o_r1
     );
 
     // clk generator
@@ -59,20 +78,13 @@ module tb;
         #0.2;
         @(posedge clk);
 
-        // add a value
-        data_in = 'hdeadbeef;
-        addr_in = 1;
-        rw      = 1;
         #0.2;
-        @(posedge clk);
-
-        // write a cycle
-        #0.2;
-        @(posedge clk);
-
-        $display("r0 = 0x%x", r0);
-        $display("r1 = 0x%x", r1);
-        $display("r2 = 0x%x", r2);
+        repeat(100) begin
+            i_addr_wc = $urandom_range(3, 0);
+            i_data_wc = $random();
+            i_en_amba_write = $urandom_range(1, 0);
+            @(posedge clk);
+        end
 
         $finish();
     end

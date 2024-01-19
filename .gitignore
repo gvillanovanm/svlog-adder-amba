@@ -1,0 +1,33 @@
+# cds
+xrun.*
+xcelium*
+*.vcd
+*.shm
+.simvision
+simvision*
+verilog.dump
+icc*
+imc*
+mdv*
+wave_image
+cov_work
+.uvmtclcomm.txt
+
+# questa
+_info
+*.qdb
+*.qpg
+*.qtl
+_vmake
+lib_BENCH
+*.wlf
+transcript
+
+# other
+*.csv
+*aes*
+*Old*
+README.md
+key*
+control.sv
+datapath.sv

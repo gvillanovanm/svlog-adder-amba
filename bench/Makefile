@@ -1,6 +1,13 @@
 TB = tb_regfile
 PKG_FILES = 
-DUT_FILES = ../svlog/regfile.sv
+DUT_FILES = \
+	../svlog/regfile.sv
+
+# TB = tb_amba# tb_regfile
+# PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
+# DUT_FILES = \
+# 	../svlog/amba_axi4_lite_if.sv \
+# 	../svlog/amba_axi4_lite.sv
 
 run_cds: cds_batchmode
 run_questa: questa_batchmode 
@@ -43,7 +50,7 @@ questa_gui: questa_clean questa_libs questa_compile
 questa_compile:
 	vlib ../libs/$(QUESTA_LIB_WORK)
 	vmap $(QUESTA_LIB_WORK) ../libs/$(QUESTA_LIB_WORK) 
-	vlog -work $(QUESTA_LIB_WORK) $(DUT_FILES) $(PKG_FILES) $(TB).sv
+	vlog -work $(QUESTA_LIB_WORK) $(PKG_FILES) $(DUT_FILES) $(TB).sv
 
 questa_libs:
 	mkdir -p ../libs/lib_BENCH
