@@ -1,3 +1,9 @@
+/**
+ * amba_axi4_lite
+ *
+ * @version: 0.1
+ * @author : Gabriel Villanova N. M.
+ */
 module regfile (
 	input logic ACLK,  
 	input logic ARSTn,
