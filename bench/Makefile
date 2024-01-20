@@ -1,13 +1,24 @@
-TB = tb_regfile
-PKG_FILES = 
-DUT_FILES = \
-	../svlog/regfile.sv
+# Configuration options: REGFILE, AMBA
+CONFIG_OPTION = AMBA
 
-# TB = tb_amba# tb_regfile
-# PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
-# DUT_FILES = \
-# 	../svlog/amba_axi4_lite_if.sv \
-# 	../svlog/amba_axi4_lite.sv
+# Option 1:
+ifeq ($(CONFIG_OPTION), REGFILE)
+    TB = tb_regfile
+    PKG_FILES =
+    DUT_FILES = \
+        ../svlog/regfile.sv
+endif
+
+# Option 2:
+ifeq ($(CONFIG_OPTION), AMBA)
+    TB = tb_amba
+    PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
+    DUT_FILES = \
+        ../svlog/amba_axi4_lite_if.sv \
+        ../svlog/amba_axi4_lite.sv \
+		../svlog/regfile.sv
+endif
+
 
 run_cds: cds_batchmode
 run_questa: questa_batchmode 

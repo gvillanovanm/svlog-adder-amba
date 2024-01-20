@@ -13,7 +13,7 @@ module amba_axi4_lite (
 
     // custom signals to RB
     output logic o_en_amba_write,
-    output logic [31:0] o_data,
+    output logic [31:0] o_data_wc,
     output logic [31:0] o_addr_wc,
     output logic [3:0] o_strb, // bytes to enable (default 1111 -> 32 bytes)
     input logic [31:0] i_data_rc,
@@ -63,9 +63,7 @@ logic w_is_busy_wc;
 // read channel
 logic [2:0]read_ARPROT;
 logic [SIZE_ADDR-1:0]read_ARADDR;
-logic [SIZE_WORD-1:0]read_RDATA;
 logic w_is_busy_rc;
-// logic leu, , w_is_busy_rc;
 
 // -------------------------------------------------------
 // write channel
@@ -78,7 +76,7 @@ always_ff @(posedge amba.ACLK) begin
         read_WDATA         <= 0;
         w_en_amba_write_wc <= 0;
     end  else begin
-        unique case (STATE_wc)
+        case (STATE_wc)
             // idle
             wc_state_idle: begin
                 STATE_wc           <= wc_state_wait_addr;
@@ -127,8 +125,9 @@ always_ff @(posedge amba.ACLK) begin
 
             // exec
             wc_state_exec: begin
-                if(amba.B.READY)
+                if(amba.B.READY) begin
                     STATE_wc <= wc_state_wait_addr;
+                end
                 
 				w_en_amba_write_wc <= 1;
                 w_is_busy_wc       <= i_is_busy;
@@ -150,7 +149,7 @@ always_comb  begin
 
 			// reg
 			o_en_amba_write = 0;
-            o_data          = 0;
+            o_data_wc       = 0;
             o_addr_wc       = 0;
             o_strb          = 0;
         end
@@ -165,7 +164,7 @@ always_comb  begin
 
 			// reg
 			o_en_amba_write = 0;
-            o_data          = 0;
+            o_data_wc       = 0;
             o_addr_wc       = 0;
             o_strb          = 0;
         end
@@ -180,7 +179,7 @@ always_comb  begin
 
 			// reg
 			o_en_amba_write = 0;
-            o_data          = 0;
+            o_data_wc       = 0;
             o_addr_wc       = 0;
             o_strb          = 0;
         end
@@ -192,9 +191,9 @@ always_comb  begin
             amba.W.READY = 0;
 
 			// reg
-            o_data = read_WDATA;
+            o_data_wc = read_WDATA;
             o_addr_wc = read_AWADDR;
-            o_strb = read_WSTRB;
+            o_strb    = read_WSTRB;
             
             // ip is not busy and the adress is within the range
             if(!w_is_busy_wc && read_AWADDR[31:8] == 24'h000000 && read_AWADDR[7:0] < 8'h04) begin
@@ -207,7 +206,7 @@ always_comb  begin
                 o_en_amba_write = 0;
             end
 
-            // return answer
+            // return answer whatever
             amba.B.VALID  = 1;
         end
     endcase
@@ -221,9 +220,8 @@ always_ff @(posedge amba.ACLK) begin
         STATE_rc    <= rc_state_idle;
         read_ARPROT <= 0;
         read_ARADDR <= 0;
-        read_RDATA  <= 0;
     end else begin
-        unique case(STATE_rc)
+        case(STATE_rc)
             // idle
             rc_state_idle: begin
                 STATE_rc     <= rc_state_wait_addr;
@@ -253,7 +251,7 @@ always_ff @(posedge amba.ACLK) begin
 end
 
 always_comb begin    
-    unique case (STATE_rc)
+    case (STATE_rc)
 		// idle
         rc_state_idle: begin
 			amba.AR.READY = 0;
@@ -278,7 +276,7 @@ always_comb begin
             amba.R.VALID  = 1;
             o_addr_rc     = read_ARADDR;
 
-            if(w_is_busy_rc && read_ARADDR[31:8] == 24'h000000 && (read_ARADDR[7:0] < 8'h04)) begin
+            if(!w_is_busy_rc && read_ARADDR[31:2] == 0) begin
                 amba.R.RESP = AXI4_RESP_L_OKAY;
                 amba.R.DATA = i_data_rc;
             end else begin
