@@ -1,5 +1,5 @@
 /**
- * testbench amba
+ * testbench main
  *
  * @version: 0.1
  * @author : Gabriel Villanova N. M.
@@ -17,35 +17,35 @@ module tb();
         .ARSTn(ARSTn)
     );
 
-    // amba write channel
+    // amba / reg
+    logic [3:0] w_strb;
     logic [31:0] w_addr_wc;
     logic [31:0] w_data_wc;
-
-    // amba read channel
     logic [31:0] w_addr_rc;
     logic [31:0] w_data_rc;
-
-    // amba ctrl
     logic w_en_amba_write;
 
-    // datapath
-    logic i_enable_ctrl_write = 0;
-    logic i_start;
-    logic [31:0] i_busr;
-    logic [31:0] o_r0;
-    logic [31:0] o_r1;
-    logic [3:0] o_strb;
+    // datapath / reg / ctrl
+    logic [31:0] w_r0;
+    logic [31:0] w_r1;
+    logic [31:0] w_busr;
+    logic w_reg2ctrl;
+    logic w_ctrl2dp;
+    logic w_en_ctrl_write;
+    logic w_start;
+    logic w_is_busy;
+    logic w_rst_start;
 
     // ----------------------------------------------------
     // instances
     // ----------------------------------------------------
     amba_axi4_lite uu_amba_axi4_lite(
         .amba(uu_amba_axi4_lite_if),
-        .i_is_busy(i_is_busy),
+        .i_is_busy(w_is_busy),
         .o_en_amba_write(w_en_amba_write),
         .o_data_wc(w_data_wc),
         .o_addr_wc(w_addr_wc),
-        .o_strb(o_strb),
+        .o_strb(w_strb),
         .i_data_rc(w_data_rc),
         .o_addr_rc(w_addr_rc)
     );
@@ -64,13 +64,35 @@ module tb();
     
         // amba ctrl
         .i_en_amba_write(w_en_amba_write),
+        .i_rst_start(w_rst_start),
     
         // datapath
-        .i_enable_ctrl_write(i_enable_ctrl_write),
-        .o_start(o_start),
-        .i_busr(i_busr),
-        .o_r0(o_r0), 
-        .o_r1(o_r1)
+        .i_enable_ctrl_write(w_en_ctrl_write),
+        .o_start(w_start),
+        .o_op(w_reg2ctrl),
+        .i_busr(w_busr),
+        .o_r0(w_r0), 
+        .o_r1(w_r1)
+    );
+
+    datapath uu_datapath(
+        .i_busa(w_r0),
+        .i_busb(w_r1),
+        .i_op(w_ctrl2dp),
+        .o_busr(w_busr)
+    );
+
+    control uu_control(
+        .ACLK(ACLK),
+        .ARSTn(ARSTn),
+
+        .i_start(w_start),
+        .i_ip(w_reg2ctrl),
+        
+        .o_is_busy(w_is_busy),
+        .o_op(w_ctrl2dp),
+        .o_en_ctrl_write(w_en_ctrl_write),
+        .o_rst_start(w_rst_start)
     );
 
     // ----------------------------------------------------
@@ -93,40 +115,28 @@ module tb();
         i_is_busy = 1'b0;
 
         // write channel
+
+        // r0
         write_addr_wc('h0, 'h7);
-        write_data_wc('haaaa,'hff);
+        write_data_wc('h0000_aaaa,'hff);
         
+        // r1
         write_addr_wc('h1, 'h7);
-        write_data_wc('hbbbb,'hff);
+        write_data_wc('hbbbb_0000,'hff);
 
-        write_addr_wc('h2, 'h7);
-        write_data_wc('hcccc,'hff);
-
+        // ctrl: op = 1; enable = 1;
         write_addr_wc('h3, 'h7);
-        write_data_wc('hdddd,'hff);
+        write_data_wc('h0000_0003,'hff);
 
-        repeat(3) begin
-            write_addr_wc('h4, 'h7); // illegal
-            write_data_wc('heeee,'hff);
-        end
+        // delay
+        repeat(10) 
+            @(posedge ACLK);
 
-        // read channel
-        write_addr_rc('h0, 'hf);
-        wait_data_rc();
-
-        write_addr_rc('h1, 'hf);
-        wait_data_rc();
-
+        // read channel r2 that should be 0xbbbb_aaaa
         write_addr_rc('h2, 'hf);
         wait_data_rc();
 
-        write_addr_rc('h3, 'hf);
-        wait_data_rc();
-
-        write_addr_rc('h4, 'hf);
-        wait_data_rc();
-
-        // finish
+        // delay
         repeat(10) 
             @(posedge ACLK);
         $finish();

@@ -18,10 +18,12 @@ module regfile (
 
 	// amba ctrl
 	input logic i_en_amba_write,
+	input logic i_rst_start,
 
 	// datapath
 	input  logic i_enable_ctrl_write,
 	output logic o_start,
+	output logic o_op,
 	input  logic [31:0] i_busr,
 	output logic [31:0] o_r0, 
 	output logic [31:0] o_r1
@@ -46,6 +48,10 @@ always_ff @(posedge ACLK) begin
 		if(i_enable_ctrl_write) begin
 			register[2] <= i_busr;
 		end
+
+		if(i_rst_start) begin
+			register[3][0] <= 0;
+		end
 	end
 end
 
@@ -59,6 +65,7 @@ always_comb begin
 
 	// lsb
 	o_start = register[3][0];
+	o_op = register[3][1];
 	o_r0 = register[0];
 	o_r1 = register[1];
 end

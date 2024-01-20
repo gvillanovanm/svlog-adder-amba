@@ -25,9 +25,3 @@ transcript
 
 # other
 *.csv
-*aes*
-*Old*
-README.md
-key*
-control.sv
-datapath.sv

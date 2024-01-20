@@ -1,5 +1,5 @@
-# Configuration options: REGFILE, AMBA
-CONFIG_OPTION = AMBA
+# Configuration options: REGFILE, AMBA, MAIN
+CONFIG_OPTION = MAIN
 
 # Option 1:
 ifeq ($(CONFIG_OPTION), REGFILE)
@@ -17,6 +17,18 @@ ifeq ($(CONFIG_OPTION), AMBA)
         ../svlog/amba_axi4_lite_if.sv \
         ../svlog/amba_axi4_lite.sv \
 		../svlog/regfile.sv
+endif
+
+# Option 2:
+ifeq ($(CONFIG_OPTION), MAIN)
+    TB = tb_main
+    PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
+    DUT_FILES = \
+        ../svlog/amba_axi4_lite_if.sv \
+        ../svlog/amba_axi4_lite.sv \
+		../svlog/regfile.sv \
+		../svlog/datapath.sv \
+		../svlog/control.sv
 endif
 
 
