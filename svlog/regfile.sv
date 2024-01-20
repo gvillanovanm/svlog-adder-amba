@@ -30,15 +30,15 @@ always_ff @(posedge ACLK) begin
 	end else begin
 		// write from amba
 		if(i_en_amba_write) begin
-			if(i_addr_wc == 0) register[0] = i_data_wc; // r0
-			if(i_addr_wc == 1) register[1] = i_data_wc; // r1
-			if(i_addr_wc == 2) register[2] = i_data_wc; // r2
-			if(i_addr_wc == 3) register[3] = i_data_wc; // ctrl
+			if(i_addr_wc == 0) register[0] <= i_data_wc; // r0
+			if(i_addr_wc == 1) register[1] <= i_data_wc; // r1
+			if(i_addr_wc == 2) register[2] <= i_data_wc; // r2
+			if(i_addr_wc == 3) register[3] <= i_data_wc; // ctrl
 		end
 
 		// write from ctrl
 		if(i_enable_ctrl_write) begin
-			register[2] = i_busr;
+			register[2] <= i_busr;
 		end
 	end
 end

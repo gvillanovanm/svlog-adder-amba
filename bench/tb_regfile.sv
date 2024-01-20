@@ -36,22 +36,22 @@ module tb;
         .ARSTn(rst_n),
         
         // amba write channel
-        .i_addr_wc,
-        .i_data_wc,
+        .i_addr_wc(i_addr_wc),
+        .i_data_wc(i_data_wc),
     
         // amba read channel
-        .i_addr_rc,
-        .o_data_rc,
+        .i_addr_rc(i_addr_rc),
+        .o_data_rc(o_data_rc),
     
         // amba ctrl
-        .i_en_amba_write,
+        .i_en_amba_write(i_en_amba_write),
     
         // datapath
-        .i_enable_ctrl_write,
-        .o_start,
-        .i_busr,
-        .o_r0, 
-        .o_r1
+        .i_enable_ctrl_write(i_enable_ctrl_write),
+        .o_start(o_start),
+        .i_busr(i_busr),
+        .o_r0(o_r0), 
+        .o_r1(o_r1)
     );
 
     // clk generator
