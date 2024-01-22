@@ -64,6 +64,7 @@ module adder_amba_top #(
     logic w_start;
     logic w_is_busy;
     logic w_rst_start;
+    logic w_result_is_done;
 
     assign uu_amba_axi4_lite_if.AW.ADDR = S_AXI_AWADDR;
     assign uu_amba_axi4_lite_if.AW.VALID = S_AXI_AWVALID;
@@ -118,7 +119,8 @@ module adder_amba_top #(
         // amba ctrl
         .i_en_amba_write(w_en_amba_write),
         .i_rst_start(w_rst_start),
-    
+        .i_result_is_done(w_result_is_done),
+
         // datapath
         .i_enable_ctrl_write(w_en_ctrl_write),
         .o_start(w_start),
@@ -146,6 +148,7 @@ module adder_amba_top #(
         .o_is_busy(w_is_busy),
         .o_op(w_ctrl2dp),
         .o_en_ctrl_write(w_en_ctrl_write),
-        .o_rst_start(w_rst_start)
+        .o_rst_start(w_rst_start),
+        .o_result_is_done(w_result_is_done)
     );
 endmodule

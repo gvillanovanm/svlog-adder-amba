@@ -19,6 +19,7 @@ module regfile (
 	// amba ctrl
 	input logic i_en_amba_write,
 	input logic i_rst_start,
+	input logic i_result_is_done,
 
 	// datapath
 	input  logic i_enable_ctrl_write,
@@ -57,6 +58,11 @@ always_ff @(posedge ACLK) begin
 		// reset start bit
 		if(i_rst_start) begin
 			register[3][0] <= 0;
+		end
+
+		// result is done
+		if(i_result_is_done) begin
+			register[3][31] <= 1;
 		end
 	end
 end

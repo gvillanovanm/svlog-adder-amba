@@ -54,6 +54,9 @@ module tb();
     logic [C_S_AXI_DATA_WIDTH-1 : 0] addr;
     logic [C_S_AXI_DATA_WIDTH-1 : 0] wc_data;
     logic [C_S_AXI_DATA_WIDTH-1 : 0] rc_data;
+    logic op;
+    logic done = 0;
+    logic [C_S_AXI_DATA_WIDTH-1 : 0] r0, r1, r;
 
     // ----------------------------------------------------
     // clk
@@ -105,91 +108,66 @@ module tb();
     // ----------------------------------------------------
     initial begin
         $display("Starts the test here...");
+        // choose operation to be made
+        op = 0; // 1: add ; 0: sub
 
         // reset routine
-        @(posedge S_AXI_ACLK); #1;
+        @(posedge S_AXI_ACLK); @(posedge S_AXI_ACLK);
         S_AXI_ARESETN = 1'b0;
-        @(posedge S_AXI_ACLK); #1;
+        @(posedge S_AXI_ACLK); @(posedge S_AXI_ACLK);
         S_AXI_ARESETN = 1'b1;
         reset();
 
-        // write channel
-
-        // r0
+        // write value in r0
         $display("r0 ---------------------------------\n");
         addr = 32'h0000_0000;
-        wc_data = 32'h0000_aaaa;
+        wc_data = 32'h0000_0002;
+        r0 = wc_data;
         data_read_from_axi = 0;
-        $display("Write data 0x%x", wc_data);
-        $display("      Addr 0x%4x\n", addr);
-
-        // write
-        write_addr_wc(addr, 'h7);
-        write_data_wc(wc_data,'hff);
-        
-        // read
-        write_addr_rc(addr, 'h7);
-        wait_data_rc();
-        $display(" Read data 0x%x", data_read_from_axi);
-        assert(wc_data === data_read_from_axi)
+        perform_write_read_and_check(addr, wc_data);
         $display("------------------------------------\n\n");
 
-        // r1
+        // write value in r1
         $display("r1 ---------------------------------\n");
         addr = 32'h0000_0004;
-        wc_data = 32'hbbbb_0000;
+        wc_data = 32'h0000_0001;
+        r1 = wc_data;
         data_read_from_axi = 0;
-        $display("Write data 0x%x", wc_data);
-        $display("      Addr 0x%4x\n", addr);
-
-        // write
-        write_addr_wc(addr, 'h7);
-        write_data_wc(wc_data,'hff);
-
-        // read
-        write_addr_rc(addr, 'h7);
-        wait_data_rc();
-        $display(" Read data 0x%x", data_read_from_axi);
-        assert(wc_data === data_read_from_axi)
+        perform_write_read_and_check(addr, wc_data);
         $display("------------------------------------\n\n");
 
-        // r2 (result is nothing yet)
-        $display("r2 ---------------------------------\n");
-        addr = 32'h0000_0008;
-        write_addr_rc(addr, 'h7);
-        wait_data_rc();
-        $display(" Read data 0x%x", data_read_from_axi);
-        $display("------------------------------------\n\n");
-
-        // r3 ctrl
-        $display("r3 ---------------------------------\n");
+        // enable computation in ctrl and status
         addr = 32'h0000_000c;
-        wc_data = 32'h0000_0003; // op=1, enable1=1
+        wc_data = {30'h0,{op,1'b1}};
         data_read_from_axi = 0;
-        $display("Write data 0x%x", wc_data);
-        $display("      Addr 0x%4x\n", addr);
-
-        // write
         write_addr_wc(addr, 'h7);
         write_data_wc(wc_data,'hff);
 
-        // read
-        write_addr_rc(addr, 'h7);
-        wait_data_rc();
-        $display(" Read data 0x%x", data_read_from_axi);
-        assert(wc_data === data_read_from_axi)
-        $display("------------------------------------\n\n");
-
-
-        // r3 (result is nothing yet)
-        repeat(10) begin
-            $display("r2 ---------------------------------\n");
-            addr = 32'h0000_0008;
+        // read if computation is finished in ctrl and status (polling)
+        $display("status -----------------------------\n");
+        while(done == 0) begin
+            addr = 32'h0000_000c;
+            data_read_from_axi = 0;
             write_addr_rc(addr, 'h7);
             wait_data_rc();
-            $display(" Read data 0x%x", data_read_from_axi);
-            $display("------------------------------------\n\n");
+            done = data_read_from_axi[31];
+            $display("polling: %b, %x", done, data_read_from_axi);
+            @(posedge S_AXI_ACLK);
         end
+        $display("------------------------------------\n\n");
+
+        // read register r2
+        addr = 32'h0000_0008;
+        data_read_from_axi = 0;
+        write_addr_rc(addr, 'h7);
+        wait_data_rc();
+
+        // check result
+        r = (op) ? r0+r1 : r0-r1;
+        if(r == data_read_from_axi)
+            $display("PASS!");
+        else
+            $display("FAIL!");
 
         $finish();
     end
@@ -201,14 +179,11 @@ module tb();
         S_AXI_BREADY = 0;
     endtask
 
-    // ----------------------------------------------------
-    // write channel tasks
-    // ----------------------------------------------------
     // write addr
     task write_addr_wc;
         input logic [31:0] wc_addr;
         input logic [2:0]  wc_prot;
-        @(posedge S_AXI_ACLK); #1;
+        @(posedge S_AXI_ACLK); @(posedge S_AXI_ACLK);
             S_AXI_AWVALID = 1'b1;
             S_AXI_AWPROT  = wc_prot;
             S_AXI_AWADDR  = wc_addr;
@@ -218,28 +193,29 @@ module tb();
     task write_data_wc;
         input logic [31:0] wc_data;
         input logic [3:0] wc_strb;
-    
+
         @(posedge S_AXI_ACLK); 
-            while(!S_AXI_AWREADY) //@(posedge S_AXI_ACLK);
-        #1;
+            while(!S_AXI_AWREADY) @(posedge S_AXI_ACLK);
+
+        @(posedge S_AXI_ACLK);
         S_AXI_AWVALID = 1'b0;
         S_AXI_WDATA   = wc_data;
         S_AXI_WSTRB   = wc_strb;
         S_AXI_WVALID  = 1'b1;
         @(posedge S_AXI_ACLK); 
             while(!S_AXI_WREADY) @(posedge S_AXI_ACLK);
-        #1;
+
+        @(posedge S_AXI_ACLK);
         S_AXI_WVALID = 1'b0;
         S_AXI_BREADY = 1'b1;
         @(posedge S_AXI_ACLK); 
             while(!S_AXI_BVALID) @(posedge S_AXI_ACLK);
-        #1;
+
+        @(posedge S_AXI_ACLK);
         S_AXI_BREADY = 1'b0;
     endtask
 
-    // ----------------------------------------------------
     // read channel tasks
-    // ----------------------------------------------------
     task write_addr_rc;
         input logic [31:0] rc_addr;
         input logic [3:0]  rc_prot;
@@ -252,7 +228,7 @@ module tb();
         logic [31:0] aux_data;
         @(posedge S_AXI_ACLK);
             while(!S_AXI_ARREADY) @(posedge S_AXI_ACLK);
-        #1;
+        @(posedge S_AXI_ACLK);
 
         S_AXI_ARVALID = 1'b0;
         S_AXI_RREADY  = 1'b1;
@@ -261,7 +237,23 @@ module tb();
             while(!S_AXI_RVALID) begin
                 @(posedge S_AXI_ACLK); 
             end
-        #1;
+        @(posedge S_AXI_ACLK);
         S_AXI_RREADY  = 1'b0;
+    endtask
+
+    task perform_write_read_and_check(input logic [31:0] addr, input logic [31:0] wc_data);
+        // write
+        $display("Write data %x", wc_data);
+        $display("      Addr 0x%4x\n", addr);
+        write_addr_wc(addr, 'h7);
+        write_data_wc(wc_data,'hff);
+
+        // read
+        write_addr_rc(addr, 'h7);
+        wait_data_rc();
+        $display(" Read data %x", data_read_from_axi);
+
+        // check
+        assert(wc_data === data_read_from_axi);
     endtask
 endmodule

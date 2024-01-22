@@ -14,14 +14,15 @@ module control (
 	output logic o_is_busy,
 	output logic o_op,
 	output logic o_en_ctrl_write,
-	output logic o_rst_start
+	output logic o_rst_start,
+	output logic o_result_is_done
 );
 
-typedef enum logic [1:0]
-{
+typedef enum logic [1:0] {
 	wait_start_bit,
 	execute,
-	wr_register
+	wr_register,
+	done
 } STATE_E;
 
 STATE_E STATE;
@@ -35,6 +36,7 @@ always_ff @(posedge ACLK) begin
         o_is_busy  <= 0;
 		o_en_ctrl_write <= 0;
 		o_rst_start <= 0;
+		o_result_is_done <= 0;
         STATE <= wait_start_bit;
 	end 
 	else begin
@@ -44,6 +46,7 @@ always_ff @(posedge ACLK) begin
 				o_is_busy <= 0; // AMBA can write in rb
 				o_en_ctrl_write <= 0;
 				o_rst_start <= 0;
+				o_result_is_done <= 0;
 				if(i_start) begin
  					o_is_busy <= 1; // AMBA cannot write in rb
 					STATE <= execute;
@@ -55,6 +58,7 @@ always_ff @(posedge ACLK) begin
 				o_is_busy <= 1; // AMBA cannot write in rb
 				o_en_ctrl_write <= 1;
 				o_rst_start <= 0;
+				o_result_is_done <= 0;
 				STATE <= wr_register;
 			end
 
@@ -63,6 +67,16 @@ always_ff @(posedge ACLK) begin
 				o_is_busy <= 1; // AMBA cannot write in rb
 				o_en_ctrl_write <= 0;
 				o_rst_start <= 1;
+				o_result_is_done <= 0;
+				STATE <= done;
+			end
+
+			// done
+			done: begin
+				o_is_busy <= 1; // AMBA cannot write in rb
+				o_en_ctrl_write <= 0;
+				o_rst_start <= 0;
+				o_result_is_done <= 1;
 				STATE <= wait_start_bit;
 			end
 		endcase 
