@@ -21,14 +21,15 @@ endif
 
 # Option 2:
 ifeq ($(CONFIG_OPTION), MAIN)
-    TB = tb_main
+    TB = tb_top
     PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
     DUT_FILES = \
         ../svlog/amba_axi4_lite_if.sv \
         ../svlog/amba_axi4_lite.sv \
 		../svlog/regfile.sv \
 		../svlog/datapath.sv \
-		../svlog/control.sv
+		../svlog/control.sv \
+		../svlog/adder_amba_top.sv
 endif
 
 

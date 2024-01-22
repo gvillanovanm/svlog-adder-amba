@@ -11,12 +11,13 @@ module tb();
     logic ACLK        = 1'b0;
     logic ARSTn       = 1'b0;
     
-    logic i_is_busy;
     amba_axi4_lite_if uu_amba_axi4_lite_if(
         .ACLK(ACLK),
         .ARSTn(ARSTn)
     );
-
+        
+    logic i_is_busy;
+    
     // amba / reg
     logic [3:0] w_strb;
     logic [31:0] w_addr_wc;
