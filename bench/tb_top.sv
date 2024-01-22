@@ -16,6 +16,7 @@ module tb();
     // ----------------------------------------------------
     logic S_AXI_ACLK     = 1'b0;
     logic S_AXI_ARESETN  = 1'b0;
+    logic [C_S_AXI_DATA_WIDTH-1 : 0] data_read_from_axi;
 
     // aw
     logic [C_S_AXI_ADDR_WIDTH-1 : 0] S_AXI_AWADDR;
@@ -45,6 +46,14 @@ module tb();
     logic [1:0] S_AXI_RRESP;
     logic S_AXI_RVALID;
     logic S_AXI_RREADY;
+
+    // user
+    logic [3:0] o_leds;
+
+    // auxiliar
+    logic [C_S_AXI_DATA_WIDTH-1 : 0] addr;
+    logic [C_S_AXI_DATA_WIDTH-1 : 0] wc_data;
+    logic [C_S_AXI_DATA_WIDTH-1 : 0] rc_data;
 
     // ----------------------------------------------------
     // clk
@@ -85,7 +94,10 @@ module tb();
         .S_AXI_RDATA(S_AXI_RDATA),
         .S_AXI_RRESP(S_AXI_RRESP),
         .S_AXI_RVALID(S_AXI_RVALID),
-        .S_AXI_RREADY(S_AXI_RREADY)
+        .S_AXI_RREADY(S_AXI_RREADY),
+
+        // user
+        .o_leds(o_leds)
     );
 
     // ----------------------------------------------------
@@ -104,28 +116,81 @@ module tb();
         // write channel
 
         // r0
-        write_addr_wc('h0, 'h7);
-        write_data_wc('h0000_aaaa,'hff);
+        $display("r0 ---------------------------------\n");
+        addr = 32'h0000_0000;
+        wc_data = 32'h0000_aaaa;
+        data_read_from_axi = 0;
+        $display("Write data 0x%x", wc_data);
+        $display("      Addr 0x%4x\n", addr);
+
+        // write
+        write_addr_wc(addr, 'h7);
+        write_data_wc(wc_data,'hff);
         
-        // r1
-        write_addr_wc('h1, 'h7);
-        write_data_wc('hbbbb_0000,'hff);
-
-        // ctrl: op = 1; enable = 1;
-        write_addr_wc('h3, 'h7);
-        write_data_wc('h0000_0003,'hff);
-
-        // delay
-        repeat(10) 
-            @(posedge S_AXI_ACLK);
-
-        // read channel r2 that should be 0xbbbb_aaaa
-        write_addr_rc('h2, 'hf);
+        // read
+        write_addr_rc(addr, 'h7);
         wait_data_rc();
+        $display(" Read data 0x%x", data_read_from_axi);
+        assert(wc_data === data_read_from_axi)
+        $display("------------------------------------\n\n");
 
-        // delay
-        repeat(10) 
-            @(posedge S_AXI_ACLK);
+        // r1
+        $display("r1 ---------------------------------\n");
+        addr = 32'h0000_0004;
+        wc_data = 32'hbbbb_0000;
+        data_read_from_axi = 0;
+        $display("Write data 0x%x", wc_data);
+        $display("      Addr 0x%4x\n", addr);
+
+        // write
+        write_addr_wc(addr, 'h7);
+        write_data_wc(wc_data,'hff);
+
+        // read
+        write_addr_rc(addr, 'h7);
+        wait_data_rc();
+        $display(" Read data 0x%x", data_read_from_axi);
+        assert(wc_data === data_read_from_axi)
+        $display("------------------------------------\n\n");
+
+        // r2 (result is nothing yet)
+        $display("r2 ---------------------------------\n");
+        addr = 32'h0000_0008;
+        write_addr_rc(addr, 'h7);
+        wait_data_rc();
+        $display(" Read data 0x%x", data_read_from_axi);
+        $display("------------------------------------\n\n");
+
+        // r3 ctrl
+        $display("r3 ---------------------------------\n");
+        addr = 32'h0000_000c;
+        wc_data = 32'h0000_0003; // op=1, enable1=1
+        data_read_from_axi = 0;
+        $display("Write data 0x%x", wc_data);
+        $display("      Addr 0x%4x\n", addr);
+
+        // write
+        write_addr_wc(addr, 'h7);
+        write_data_wc(wc_data,'hff);
+
+        // read
+        write_addr_rc(addr, 'h7);
+        wait_data_rc();
+        $display(" Read data 0x%x", data_read_from_axi);
+        assert(wc_data === data_read_from_axi)
+        $display("------------------------------------\n\n");
+
+
+        // r3 (result is nothing yet)
+        repeat(10) begin
+            $display("r2 ---------------------------------\n");
+            addr = 32'h0000_0008;
+            write_addr_rc(addr, 'h7);
+            wait_data_rc();
+            $display(" Read data 0x%x", data_read_from_axi);
+            $display("------------------------------------\n\n");
+        end
+
         $finish();
     end
 
@@ -184,13 +249,18 @@ module tb();
     endtask
     
     task wait_data_rc;
+        logic [31:0] aux_data;
         @(posedge S_AXI_ACLK);
             while(!S_AXI_ARREADY) @(posedge S_AXI_ACLK);
         #1;
+
         S_AXI_ARVALID = 1'b0;
         S_AXI_RREADY  = 1'b1;
+        data_read_from_axi = S_AXI_RDATA;
         @(posedge S_AXI_ACLK);
-            while(!S_AXI_RVALID) @(posedge S_AXI_ACLK); 
+            while(!S_AXI_RVALID) begin
+                @(posedge S_AXI_ACLK); 
+            end
         #1;
         S_AXI_RREADY  = 1'b0;
     endtask

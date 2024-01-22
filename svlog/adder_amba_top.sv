@@ -33,7 +33,10 @@ module adder_amba_top #(
     output wire [C_S_AXI_DATA_WIDTH-1 : 0] S_AXI_RDATA,
     output wire [1 : 0] S_AXI_RRESP,
     output wire  S_AXI_RVALID,
-    input wire  S_AXI_RREADY
+    input wire  S_AXI_RREADY,
+
+    // user 
+    output wire [3:0] o_leds
 	);
     
     amba_axi4_lite_if uu_amba_axi4_lite_if(
@@ -122,7 +125,8 @@ module adder_amba_top #(
         .o_op(w_reg2ctrl),
         .i_busr(w_busr),
         .o_r0(w_r0), 
-        .o_r1(w_r1)
+        .o_r1(w_r1),
+        .o_leds(o_leds)
     );
 
     datapath uu_datapath(

@@ -196,7 +196,7 @@ always_comb  begin
             o_strb    = read_WSTRB;
             
             // ip is not busy and the adress is within the range
-            if(!w_is_busy_wc && read_AWADDR[31:8] == 24'h000000 && read_AWADDR[7:0] < 8'h04) begin
+            if(!w_is_busy_wc && read_AWADDR[31:8] == 24'h000000 && read_AWADDR[7:0] < 8'h14) begin
                 amba.B.RESP     = AXI4_RESP_L_OKAY;
                 o_en_amba_write = (w_en_amba_write_wc) ? 0 : 1;
             
@@ -276,7 +276,7 @@ always_comb begin
             amba.R.VALID  = 1;
             o_addr_rc     = read_ARADDR;
 
-            if(!w_is_busy_rc && read_ARADDR[31:2] == 0) begin
+            if(!w_is_busy_rc && read_ARADDR[31:8] == 0) begin
                 amba.R.RESP = AXI4_RESP_L_OKAY;
                 amba.R.DATA = i_data_rc;
             end else begin

@@ -3,7 +3,7 @@ CONFIG_OPTION = MAIN
 
 # Option 1:
 ifeq ($(CONFIG_OPTION), REGFILE)
-    TB = tb_regfile
+    TB = tb-regfile
     PKG_FILES =
     DUT_FILES = \
         ../svlog/regfile.sv
@@ -11,7 +11,7 @@ endif
 
 # Option 2:
 ifeq ($(CONFIG_OPTION), AMBA)
-    TB = tb_amba
+    TB = tb-amba
     PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
     DUT_FILES = \
         ../svlog/amba_axi4_lite_if.sv \
@@ -21,7 +21,7 @@ endif
 
 # Option 2:
 ifeq ($(CONFIG_OPTION), MAIN)
-    TB = tb_top
+    TB = tb-top
     PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
     DUT_FILES = \
         ../svlog/amba_axi4_lite_if.sv \

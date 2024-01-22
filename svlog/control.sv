@@ -53,7 +53,7 @@ always_ff @(posedge ACLK) begin
 			// exec
 			execute: begin
 				o_is_busy <= 1; // AMBA cannot write in rb
-				o_en_ctrl_write <= 0;
+				o_en_ctrl_write <= 1;
 				o_rst_start <= 0;
 				STATE <= wr_register;
 			end
@@ -61,7 +61,7 @@ always_ff @(posedge ACLK) begin
 			// wr_reg
 			wr_register: begin
 				o_is_busy <= 1; // AMBA cannot write in rb
-				o_en_ctrl_write <= 1;
+				o_en_ctrl_write <= 0;
 				o_rst_start <= 1;
 				STATE <= wait_start_bit;
 			end
