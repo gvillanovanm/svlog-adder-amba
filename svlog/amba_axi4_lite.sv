@@ -24,9 +24,9 @@ module amba_axi4_lite (
 // localparam and common types
 // -------------------------------------------------------
 import amba_axi4_lite_types_pkg::*;
-localparam int unsigned SIZE_WORD = $size(amba.W.DATA);
-localparam int unsigned SIZE_STRB = $size(amba.W.STRB);
-localparam int unsigned SIZE_ADDR = $size(amba.AW.ADDR);
+localparam int unsigned SIZE_WORD = 32;
+localparam int unsigned SIZE_STRB = 4;
+localparam int unsigned SIZE_ADDR = 32;
 
 // -------------------------------------------------------
 // typedefs
