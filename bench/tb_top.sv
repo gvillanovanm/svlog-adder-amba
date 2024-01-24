@@ -9,7 +9,7 @@ module tb();
     // localparam
     // ----------------------------------------------------
     localparam C_S_AXI_DATA_WIDTH = 32;
-    localparam C_S_AXI_ADDR_WIDTH = 32;
+    localparam C_S_AXI_ADDR_WIDTH = 4;
 
     // ----------------------------------------------------
     // variables
@@ -99,11 +99,8 @@ module tb();
         .S_AXI_RVALID(S_AXI_RVALID),
         .S_AXI_RREADY(S_AXI_RREADY),
 
-        // user leds...
-        .led0_b(o_leds[0]),
-        .led0_g(o_leds[1]),
-        .led0_r(o_leds[2]),
-        .led1_b(o_leds[3])
+        // user
+        .o_leds(o_leds)
     );
 
     // ----------------------------------------------------
@@ -172,15 +169,6 @@ module tb();
         else
             $display("FAIL!");
 
-        // write value in r5 - for blinky leds
-        $display("r5 ---------------------------------\n");
-        $display("bef - o_leds is 0b%b\n", o_leds);
-        addr = 32'h0000_0010;
-        wc_data = 32'h0000_000f;
-        perform_write_read_and_check(addr, wc_data);
-        $display("\naft - o_leds is 0b%b", o_leds);
-        $display("------------------------------------\n\n");
-        
         $finish();
     end
 
