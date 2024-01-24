@@ -1,5 +1,5 @@
-# Configuration options: REGFILE, AMBA, MAIN
-CONFIG_OPTION = MAIN
+# Configuration options: REGFILE, AMBA, MAIN, FPGA
+CONFIG_OPTION = FPGA
 
 # Option 1:
 ifeq ($(CONFIG_OPTION), REGFILE)
@@ -19,7 +19,7 @@ ifeq ($(CONFIG_OPTION), AMBA)
 		../svlog/regfile.sv
 endif
 
-# Option 2:
+# Option 3:
 ifeq ($(CONFIG_OPTION), MAIN)
     TB = tb_top
     PKG_FILES = ../svlog/amba_axi4_lite_types_pkg.sv
@@ -32,6 +32,17 @@ ifeq ($(CONFIG_OPTION), MAIN)
 		../svlog/adder_amba_top.sv
 endif
 
+# Option 4:
+ifeq ($(CONFIG_OPTION), FPGA)
+    TB = tb_top
+    PKG_FILES = 
+    DUT_FILES = \
+		../svlog/regfile.sv \
+		../svlog/datapath.sv \
+		../svlog/control.sv \
+        ../fpga/amba_axi4_lite.sv \
+		../fpga/adder_amba_top.sv
+endif
 
 run_cds: cds_batchmode
 run_questa: questa_batchmode 
