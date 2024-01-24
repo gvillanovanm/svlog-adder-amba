@@ -6,7 +6,7 @@
  */
 module amba_axi4_lite #(
     parameter integer C_S_AXI_DATA_WIDTH = 32,
-    parameter integer C_S_AXI_ADDR_WIDTH = 4
+    parameter integer C_S_AXI_ADDR_WIDTH = 32
 )(
     // standard if
     input logic  S_AXI_ACLK,

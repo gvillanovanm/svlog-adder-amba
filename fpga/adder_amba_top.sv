@@ -6,7 +6,7 @@
  */
 module adder_amba_top #(
     parameter integer C_S_AXI_DATA_WIDTH = 32,
-    parameter integer C_S_AXI_ADDR_WIDTH = 4
+    parameter integer C_S_AXI_ADDR_WIDTH = 32
 )(
     input wire  S_AXI_ACLK,
     input wire  S_AXI_ARESETN,
@@ -35,11 +35,17 @@ module adder_amba_top #(
     output wire  S_AXI_RVALID,
     input wire  S_AXI_RREADY,
 
-    // user 
-    output wire [3:0] o_leds
+    // user ...
+
+    // user constraints arty35t for leds rgb
+    output wire led0_b,
+    output wire led0_g,
+    output wire led0_r,
+    output wire led1_b
 	);
     
     logic i_is_busy;
+    logic [3:0] o_leds;
     
     // amba / reg
     logic [3:0] w_strb;
@@ -60,6 +66,14 @@ module adder_amba_top #(
     logic w_is_busy;
     logic w_rst_start;
     logic w_result_is_done;
+
+    // ----------------------------------------------------
+    // instances
+    // ----------------------------------------------------
+    assign led0_b = o_leds[0];
+    assign led0_g = o_leds[1];
+    assign led0_r = o_leds[2];
+    assign led1_b = o_leds[3];
 
     // ----------------------------------------------------
     // instances

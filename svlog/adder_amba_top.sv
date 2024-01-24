@@ -36,7 +36,10 @@ module adder_amba_top #(
     input wire  S_AXI_RREADY,
 
     // user 
-    output wire [3:0] o_leds
+    output wire led0_b,
+    output wire led0_g,
+    output wire led0_r,
+    output wire led1_b
 	);
     
     amba_axi4_lite_if uu_amba_axi4_lite_if(
@@ -45,7 +48,8 @@ module adder_amba_top #(
     );
 
     logic i_is_busy;
-    
+    logic [3:0] o_leds;
+
     // amba / reg
     logic [3:0] w_strb;
     logic [31:0] w_addr_wc;
@@ -89,6 +93,11 @@ module adder_amba_top #(
     assign S_AXI_RVALID = uu_amba_axi4_lite_if.R.VALID;
     assign S_AXI_RDATA = uu_amba_axi4_lite_if.R.DATA;
     assign S_AXI_RRESP = uu_amba_axi4_lite_if.R.RESP;
+
+    assign led0_b = o_leds[0];
+    assign led0_g = o_leds[1];
+    assign led0_r = o_leds[2];
+    assign led1_b = o_leds[3];
 
     // ----------------------------------------------------
     // instances
