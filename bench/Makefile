@@ -34,14 +34,16 @@ endif
 
 # Option 4:
 ifeq ($(CONFIG_OPTION), FPGA)
-    TB = tb_top
+    TB = tb_top_fpga
     PKG_FILES = 
     DUT_FILES = \
 		../svlog/regfile.sv \
 		../svlog/datapath.sv \
 		../svlog/control.sv \
         ../fpga/amba_axi4_lite.sv \
-		../fpga/adder_amba_top.sv
+		../fpga/adder_amba_top.sv \
+		../fpga/wrapper_xilinx/svlog_adder_amba_v1_0_S00_AXI.sv \
+		../fpga/wrapper_xilinx/svlog_adder_amba_v1_0.sv
 endif
 
 run_cds: cds_batchmode

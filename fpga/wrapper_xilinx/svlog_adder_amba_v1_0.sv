@@ -48,7 +48,7 @@
 		.C_S_AXI_DATA_WIDTH(C_S00_AXI_DATA_WIDTH),
 		.C_S_AXI_ADDR_WIDTH(C_S00_AXI_ADDR_WIDTH)
 	) svlog_adder_amba_v1_0_S00_AXI_inst (
-	    .o_leds(o_leds),
+		.o_leds(o_leds),
 		.S_AXI_ACLK(s00_axi_aclk),
 		.S_AXI_ARESETN(s00_axi_aresetn),
 		.S_AXI_AWADDR(s00_axi_awaddr),
