@@ -6,7 +6,7 @@
  */
 module adder_amba_top #(
     parameter integer C_S_AXI_DATA_WIDTH = 32,
-    parameter integer C_S_AXI_ADDR_WIDTH = 32
+    parameter integer C_S_AXI_ADDR_WIDTH = 5
 )(
     input wire  S_AXI_ACLK,
     input wire  S_AXI_ARESETN,
