@@ -1,11 +1,12 @@
-## Tools
+# Adder AMBA AXI-4 Lite
 
-Vivado 2023.2
+This is a straightforward design for adding or subtracting a 32-bit word to demonstrate how it can be integrated with a processor (AXI-4 Lite Master) and AXI-4 Lite Interconnect and synthesized in an FPGA, enabling the use of the IP by software.
 
-## Create Package New IP for Adder AMBA
+## Macroarchitecture
 
-* Name: svlog_adder_amba
-* Version 1.0
-* Display name: adder_amba
-* Description: "Adder AMBA AXI-4 Lite"
+![Macroarchitecture](docs/svlog-adder-amba.png)
 
+## TODO: Vivado Flow
+
+Tool:
+- Vivado 2023.2
